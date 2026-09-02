@@ -1,10 +1,10 @@
 # ==========================================
-# 1. PILIH IMJ PHP + APACHE
+# 1. GUNA PHP 8.2 (TANPA APACHE)
 # ==========================================
-FROM php:8.2-apache
+FROM php:8.2-cli
 
 # ==========================================
-# 2. PASANG DEPENDENCIES
+# 2. PASANG EXTENSION & COMPOSER
 # ==========================================
 RUN apt-get update && apt-get install -y \
     libzip-dev \
@@ -12,49 +12,34 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && docker-php-ext-install zip pdo pdo_mysql
 
-# ==========================================
-# 3. PASANG COMPOSER
-# ==========================================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # ==========================================
-# 4. SET FOLDER KERJA
+# 3. SET FOLDER KERJA
 # ==========================================
-WORKDIR /var/www/html
+WORKDIR /app
 
 # ==========================================
-# 5. COPY SEMUA FAIL PROJEK
+# 4. COPY PROJEK
 # ==========================================
 COPY . .
 
 # ==========================================
-# 6. INSTALL PHP DEPENDENCIES
+# 5. INSTALL DEPENDENCIES
 # ==========================================
 RUN composer install --no-dev --optimize-autoloader
 
 # ==========================================
-# 7. SET PERMISSION
+# 6. SET PERMISSION STORAGE
 # ==========================================
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+RUN chmod -R 755 storage bootstrap/cache
 
 # ==========================================
-# 8. ENABLE APACHE MOD_REWRITE
+# 7. EXPOSE PORT (Render guna PORT 10000)
 # ==========================================
-RUN a2enmod rewrite
+EXPOSE 10000
 
 # ==========================================
-# 9. SKIP KEY GENERATE (APP_KEY dari Environment Variables)
+# 8. JALANKAN LARAVEL BUILT-IN SERVER
 # ==========================================
-# APP_KEY akan di set melalui Render Environment Variables
-
-# ==========================================
-# 10. EXPOSE PORT 80
-# ==========================================
-EXPOSE 80
-
-# ==========================================
-# 11. START APACHE
-# ==========================================
-CMD ["apache2-foreground"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
