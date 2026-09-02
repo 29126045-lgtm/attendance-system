@@ -45,10 +45,9 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN a2enmod rewrite
 
 # ==========================================
-# 9. SET ENVIRONMENT
+# 9. SKIP KEY GENERATE (APP_KEY dari Environment Variables)
 # ==========================================
-RUN cp .env.example .env || true
-RUN php artisan key:generate
+# APP_KEY akan di set melalui Render Environment Variables
 
 # ==========================================
 # 10. EXPOSE PORT 80
